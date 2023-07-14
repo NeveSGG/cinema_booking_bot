@@ -1,7 +1,6 @@
 from PIL import Image, ImageDraw, ImageFont
 import csv
 import telebot
-import os
 
 bot = telebot.TeleBot('5976173556:AAFq5WaLR9st7Ki76QwytLqAC2TMRnQ96JM')
 
@@ -104,140 +103,274 @@ generate_initial_grid()
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
-    keyboard = telebot.types.InlineKeyboardMarkup()
-    keyboard.add(telebot.types.InlineKeyboardButton('Показать места', callback_data='show_seats'))
-    keyboard.add(telebot.types.InlineKeyboardButton('Информация о фильме', callback_data='movie_info'))
+    try:
+        keyboard = telebot.types.InlineKeyboardMarkup()
+        keyboard.add(telebot.types.InlineKeyboardButton('Показать места', callback_data='show_seats'))
+        keyboard.add(telebot.types.InlineKeyboardButton('Информация о фильме', callback_data='movie_info'))
 
-    free_seats = count_free_seats()
+        free_seats = count_free_seats()
 
-    bot.send_message(message.chat.id, 'Вы можете забронировать место на фильм на 16:00\nОсталось '+str(free_seats)+' мест',
-                     reply_markup=keyboard)
+        bot.send_message(message.chat.id, 'Вы можете забронировать место на фильм на 16:00\nОсталось '+str(free_seats)+' мест',
+                         reply_markup=keyboard)
+    except:
+        bot.send_message('1396965518',
+                         'Произошла ошибка при попытке пользователя @' + str(
+                             message.chat.username) + ' начать диалог с ботом. Разработчик тоже в курсе произошедшего',
+                         reply_markup=keyboard)
+        bot.send_message('451474085',
+                         'Произошла ошибка при попытке пользователя @' + str(
+                             message.chat.username) + ' начать диалог с ботом. Разработчик тоже в курсе произошедшего',
+                         reply_markup=keyboard)
+        bot.send_message(message.chat.id,
+                         'Произошла ошибка в работе бота. Попробуйте удалить историю диалога и написать команду /start. Если это не помогло, обратитесь за билетами по телефону 89994568133 (Лев)',
+                         reply_markup=keyboard)
 
 @bot.callback_query_handler(func=lambda call: call.data == "movie_info")
 def show_seats_handler(call):
-    chat_id = call.message.chat.id
+    try:
+        chat_id = call.message.chat.id
 
-    keyboard = telebot.types.InlineKeyboardMarkup()
-    keyboard.add(telebot.types.InlineKeyboardButton('Посмотреть свободные места', callback_data='show_seats'))
-    keyboard.add(telebot.types.InlineKeyboardButton('Забронировать место', callback_data='start_booking'))
+        keyboard = telebot.types.InlineKeyboardMarkup()
+        keyboard.add(telebot.types.InlineKeyboardButton('Посмотреть свободные места', callback_data='show_seats'))
+        keyboard.add(telebot.types.InlineKeyboardButton('Забронировать место', callback_data='start_booking'))
 
-    bot.send_message(chat_id, 'Где: Омск, 10 лет Октября, 195Б\nКогда: 22.07.2023, начало в 16:00\nСколько стоит: вход 100 рублей\nКак забронировать место: по телефону 89994568133 или в этом боте\nКак называется фильм: это пока что секрет :)', reply_markup=keyboard)
-    bot.answer_callback_query(call.id, show_alert=False)
-
+        bot.send_message(chat_id, 'Где: Омск, 10 лет Октября, 195Б\nКогда: 22.07.2023, начало в 16:00\nСколько стоит: вход 100 рублей\nКак забронировать место: по телефону 89994568133 или в этом боте\nКак называется фильм: это пока что секрет :)', reply_markup=keyboard)
+        bot.answer_callback_query(call.id, show_alert=False)
+    except:
+        bot.send_message('1396965518',
+                         'Произошла ошибка при попытке пользователя @' + str(
+                             call.message.chat.username) + ' показать информацию о фильме. Разработчик тоже в курсе произошедшего',
+                         reply_markup=keyboard)
+        bot.send_message('451474085',
+                         'Произошла ошибка при попытке пользователя @' + str(
+                             call.message.chat.username) + ' показать информацию о фильме. Разработчик тоже в курсе произошедшего',
+                         reply_markup=keyboard)
+        bot.send_message(call.message.chat.id,
+                         'Произошла ошибка в работе бота. Попробуйте удалить историю диалога и написать команду /start. Если это не помогло, обратитесь за билетами по телефону 89994568133 (Лев)',
+                         reply_markup=keyboard)
+        bot.answer_callback_query(call.id, show_alert=False)
 
 @bot.callback_query_handler(func=lambda call: call.data == "show_seats")
 def show_seats_handler(call):
-    chat_id = call.message.chat.id
-    photo_path = './generated_image.png'
-    prepare_image().save(photo_path)
+    try:
+        chat_id = call.message.chat.id
+        photo_path = './generated_image.png'
+        prepare_image().save(photo_path)
 
-    keyboard = telebot.types.InlineKeyboardMarkup()
-    keyboard.add(telebot.types.InlineKeyboardButton('Забронировать место', callback_data='start_booking'))
-    keyboard.add(telebot.types.InlineKeyboardButton('Мои места', callback_data='my_seats'))
+        keyboard = telebot.types.InlineKeyboardMarkup()
+        keyboard.add(telebot.types.InlineKeyboardButton('Забронировать место', callback_data='start_booking'))
+        keyboard.add(telebot.types.InlineKeyboardButton('Мои места', callback_data='my_seats'))
 
-    with open(photo_path, 'rb') as photo:
-        bot.send_photo(chat_id, photo, reply_markup=keyboard)
+        with open(photo_path, 'rb') as photo:
+            bot.send_photo(chat_id, photo, reply_markup=keyboard)
+            bot.answer_callback_query(call.id, show_alert=False)
+    except:
+        bot.send_message('1396965518',
+                         'Произошла ошибка при попытке пользователя @' + str(
+                             call.message.chat.username) + ' отобразить все места. Разработчик тоже в курсе произошедшего',
+                         reply_markup=keyboard)
+        bot.send_message('451474085',
+                         'Произошла ошибка при попытке пользователя @' + str(
+                             call.message.chat.username) + ' отобразить все места. Разработчик тоже в курсе произошедшего',
+                         reply_markup=keyboard)
+        bot.send_message(call.message.chat.id,
+                         'Произошла ошибка в работе бота. Попробуйте удалить историю диалога и написать команду /start. Если это не помогло, обратитесь за билетами по телефону 89994568133 (Лев)',
+                         reply_markup=keyboard)
         bot.answer_callback_query(call.id, show_alert=False)
 
 @bot.callback_query_handler(func=lambda call: call.data == "my_seats")
 def show_seats_handler(call):
-    chat_id = call.message.chat.id
-    photo_path = './generated_image.png'
-    prepare_image(id=chat_id).save(photo_path)
+    try:
+        chat_id = call.message.chat.id
+        photo_path = './generated_image.png'
+        prepare_image(id=chat_id).save(photo_path)
 
-    keyboard = telebot.types.InlineKeyboardMarkup()
-    keyboard.add(telebot.types.InlineKeyboardButton('Забронировать место', callback_data='start_booking'))
-    keyboard.add(telebot.types.InlineKeyboardButton('Отменить бронь', callback_data='close_booking'))
+        keyboard = telebot.types.InlineKeyboardMarkup()
+        keyboard.add(telebot.types.InlineKeyboardButton('Забронировать место', callback_data='start_booking'))
+        keyboard.add(telebot.types.InlineKeyboardButton('Отменить бронь', callback_data='close_booking'))
 
-    with open(photo_path, 'rb') as photo:
-        bot.send_photo(chat_id, photo, reply_markup=keyboard)
+        with open(photo_path, 'rb') as photo:
+            bot.send_photo(chat_id, photo, reply_markup=keyboard)
+            bot.answer_callback_query(call.id, show_alert=False)
+    except:
+        bot.send_message('1396965518',
+                         'Произошла ошибка при попытке пользователя @' + str(
+                             call.message.chat.username) + ' отобразить его места. Разработчик тоже в курсе произошедшего',
+                         reply_markup=keyboard)
+        bot.send_message('451474085',
+                         'Произошла ошибка при попытке пользователя @' + str(
+                             call.message.chat.username) + ' отобразить его места. Разработчик тоже в курсе произошедшего',
+                         reply_markup=keyboard)
+        bot.send_message(call.message.chat.id,
+                         'Произошла ошибка в работе бота. Попробуйте удалить историю диалога и написать команду /start. Если это не помогло, обратитесь за билетами по телефону 89994568133 (Лев)',
+                         reply_markup=keyboard)
         bot.answer_callback_query(call.id, show_alert=False)
 
 @bot.callback_query_handler(func=lambda call: call.data == "close_booking")
 def show_seats_handler(call):
-    chat_id = call.message.chat.id
-    remove_rows_with_id(chat_id)
+    try:
+        chat_id = call.message.chat.id
+        remove_rows_with_id(chat_id)
 
-    keyboard = telebot.types.InlineKeyboardMarkup()
-    keyboard.add(telebot.types.InlineKeyboardButton('Показать места', callback_data='show_seats'))
-    keyboard.add(telebot.types.InlineKeyboardButton('Забронировать место', callback_data='start_booking'))
+        keyboard = telebot.types.InlineKeyboardMarkup()
+        keyboard.add(telebot.types.InlineKeyboardButton('Показать места', callback_data='show_seats'))
+        keyboard.add(telebot.types.InlineKeyboardButton('Забронировать место', callback_data='start_booking'))
 
-    bot.send_message(chat_id, 'Ваша бронь успешно отменена', reply_markup=keyboard)
-    bot.answer_callback_query(call.id, show_alert=False)
+        bot.send_message(chat_id, 'Ваша бронь успешно отменена', reply_markup=keyboard)
+        bot.answer_callback_query(call.id, show_alert=False)
+    except:
+        bot.send_message('1396965518',
+                         'Произошла ошибка при попытке пользователя @' + str(
+                             call.message.chat.username) + ' отменить бронь. Разработчик тоже в курсе произошедшего',
+                         reply_markup=keyboard)
+        bot.send_message('451474085',
+                         'Произошла ошибка при попытке пользователя @' + str(
+                             call.message.chat.username) + ' отменить бронь. Разработчик тоже в курсе произошедшего',
+                         reply_markup=keyboard)
+        bot.send_message(call.message.chat.id,
+                         'Произошла ошибка в работе бота. Попробуйте удалить историю диалога и написать команду /start. Если это не помогло, обратитесь за билетами по телефону 89994568133 (Лев)',
+                         reply_markup=keyboard)
+        bot.answer_callback_query(call.id, show_alert=False)
 
 @bot.callback_query_handler(func=lambda call: call.data == "start_booking")
 def book_row_handler(call):
-    chat_id = call.message.chat.id
+    try:
+        chat_id = call.message.chat.id
 
-    keyboard = telebot.types.InlineKeyboardMarkup()
-    for i in range(1, 9):
-        keyboard.add(telebot.types.InlineKeyboardButton(str(i), callback_data='book_row_' + str(i)))
+        keyboard = telebot.types.InlineKeyboardMarkup()
+        for i in range(1, 9):
+            keyboard.add(telebot.types.InlineKeyboardButton(str(i), callback_data='book_row_' + str(i)))
 
-    bot.send_message(chat_id, 'Выберите ряд', reply_markup=keyboard)
-    bot.answer_callback_query(call.id, show_alert=False)
+        bot.send_message(chat_id, 'Выберите ряд', reply_markup=keyboard)
+        bot.answer_callback_query(call.id, show_alert=False)
+    except:
+        bot.send_message('1396965518',
+                         'Произошла ошибка при попытке пользователя @' + str(
+                             call.message.chat.username) + ' начать бронирование. Разработчик тоже в курсе произошедшего',
+                         reply_markup=keyboard)
+        bot.send_message('451474085',
+                         'Произошла ошибка при попытке пользователя @' + str(
+                             call.message.chat.username) + ' начать бронирование. Разработчик тоже в курсе произошедшего',
+                         reply_markup=keyboard)
+        bot.send_message(call.message.chat.id,
+                         'Произошла ошибка в работе бота. Попробуйте удалить историю диалога и написать команду /start. Если это не помогло, обратитесь за билетами по телефону 89994568133 (Лев)',
+                         reply_markup=keyboard)
+        bot.answer_callback_query(call.id, show_alert=False)
 
 
 @bot.callback_query_handler(func=lambda call: call.data[0:8] == "book_row")
 def book_row_handler(call):
-    chat_id = call.message.chat.id
-    str_splitted = call.data.split('_')
-    row = str_splitted[-1]
+    try:
+        chat_id = call.message.chat.id
+        str_splitted = call.data.split('_')
+        row = str_splitted[-1]
 
-    keyboard = telebot.types.InlineKeyboardMarkup()
-    for i in range(1, 11):
-        keyboard.add(telebot.types.InlineKeyboardButton(str(i), callback_data='book_column_' + row + '_' + str(i)))
+        keyboard = telebot.types.InlineKeyboardMarkup()
+        for i in range(1, 11):
+            keyboard.add(telebot.types.InlineKeyboardButton(str(i), callback_data='book_column_' + row + '_' + str(i)))
 
-    bot.send_message(chat_id, 'Выберите место в ряду ' + row, reply_markup=keyboard)
-    bot.answer_callback_query(call.id, show_alert=False)
+        bot.send_message(chat_id, 'Выберите место в ряду ' + row, reply_markup=keyboard)
+        bot.answer_callback_query(call.id, show_alert=False)
+    except:
+        str_splitted = call.data.split('_')
+        row = str_splitted[-1]
+        bot.send_message('1396965518',
+                         'Произошла ошибка при попытке пользователя @' + str(
+                             call.message.chat.username) + ' выбрать ряд ' + row + '. Разработчик тоже в курсе произошедшего',
+                         reply_markup=keyboard)
+        bot.send_message('451474085',
+                         'Произошла ошибка при попытке пользователя @' + str(
+                             call.message.chat.username) + ' выбрать ряд ' + row + '. Разработчик тоже в курсе произошедшего',
+                         reply_markup=keyboard)
+        bot.send_message(call.message.chat.id,
+                         'Произошла ошибка в работе бота. Попробуйте удалить историю диалога и написать команду /start. Если это не помогло, обратитесь за билетами по телефону 89994568133 (Лев)',
+                         reply_markup=keyboard)
+        bot.answer_callback_query(call.id, show_alert=False)
 
 
 @bot.callback_query_handler(func=lambda call: call.data[0:11] == "book_column")
 def book_row_handler(call):
-    chat_id = call.message.chat.id
-    str_splitted = call.data.split('_')
-    column = str_splitted[-1]
-    row = str_splitted[-2]
+    try:
+        chat_id = call.message.chat.id
+        str_splitted = call.data.split('_')
+        column = str_splitted[-1]
+        row = str_splitted[-2]
 
-    with open('database.csv', 'r') as file:
-        reader = csv.reader(file)
-        next(reader)
+        with open('database.csv', 'r') as file:
+            reader = csv.reader(file)
+            next(reader)
 
-        for stroka in reader:
-            if (stroka[1] == row) & (stroka[2] == column):
-                bot.send_message(chat_id,
-                                 'Это место уже забронировано, попробуйте другое')
-                bot.answer_callback_query(call.id, show_alert=False)
-                return
+            for stroka in reader:
+                if (stroka[1] == row) & (stroka[2] == column):
+                    bot.send_message(chat_id,
+                                     'Это место уже забронировано, попробуйте другое')
+                    bot.answer_callback_query(call.id, show_alert=False)
+                    return
 
-    keyboard = telebot.types.InlineKeyboardMarkup()
-    print(row, column)
-    keyboard.add(telebot.types.InlineKeyboardButton('Да, хочу!', callback_data='confirm_booking_' + row + '_' + column))
-    keyboard.add(telebot.types.InlineKeyboardButton('Отменить', callback_data='show_seats'))
+        keyboard = telebot.types.InlineKeyboardMarkup()
+        print(row, column)
+        keyboard.add(telebot.types.InlineKeyboardButton('Да, хочу!', callback_data='confirm_booking_' + row + '_' + column))
+        keyboard.add(telebot.types.InlineKeyboardButton('Отменить', callback_data='show_seats'))
 
-    bot.send_message(chat_id, 'Вы действительно хотите забронировать место ' + column + ' в ряду ' + row + '?',
-                     reply_markup=keyboard)
-    bot.answer_callback_query(call.id, show_alert=False)
+        bot.send_message(chat_id, 'Вы действительно хотите забронировать место ' + column + ' в ряду ' + row + '?',
+                         reply_markup=keyboard)
+        bot.answer_callback_query(call.id, show_alert=False)
+    except:
+        str_splitted = call.data.split('_')
+        column = str_splitted[-1]
+        row = str_splitted[-2]
+        bot.send_message('1396965518',
+                         'Произошла ошибка при попытке пользователя @' + str(
+                             call.message.chat.username) + ' забронировать место ' + column + ' в ряду ' + row + '. Разработчик тоже в курсе произошедшего',
+                         reply_markup=keyboard)
+        bot.send_message('451474085',
+                         'Произошла ошибка при попытке пользователя @' + str(
+                             call.message.chat.username) + ' забронировать место ' + column + ' в ряду ' + row + '. Разработчик тоже в курсе произошедшего',
+                         reply_markup=keyboard)
+        bot.send_message(call.message.chat.id,
+                         'Произошла ошибка в работе бота. Попробуйте удалить историю диалога и написать команду /start. Если это не помогло, обратитесь за билетами по телефону 89994568133 (Лев)',
+                         reply_markup=keyboard)
+        bot.answer_callback_query(call.id, show_alert=False)
 
 
 @bot.callback_query_handler(func=lambda call: call.data[0:15] == "confirm_booking")
 def book_row_handler(call):
-    chat_id = call.message.chat.id
-    str_splitted = call.data.split('_')
-    column = str_splitted[-1]
-    row = str_splitted[-2]
+    try:
+        chat_id = call.message.chat.id
+        str_splitted = call.data.split('_')
+        column = str_splitted[-1]
+        row = str_splitted[-2]
 
-    bot.send_message('1396965518',
-                     'Пользователь '+str(call.message.chat.first_name)+ ' ' + str(call.message.chat.last_name) + ' под ником @'+str(call.message.chat.username)+' забронировал место '+column+' в ряду '+row+'.')
+        with open('./database.csv', 'a', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow([chat_id, row, column])
 
-    with open('./database.csv', 'a', newline='') as file:
-        writer = csv.writer(file)
-        writer.writerow([chat_id, row, column])
+        bot.send_message('1396965518',
+                         'Пользователь ' + str(call.message.chat.first_name) + ' ' + str(
+                             call.message.chat.last_name) + ' под ником @' + str(
+                             call.message.chat.username) + ' забронировал место ' + column + ' в ряду ' + row + '.')
 
-    keyboard = telebot.types.InlineKeyboardMarkup()
-    keyboard.add(telebot.types.InlineKeyboardButton('Посмотреть забронированные места', callback_data='show_seats'))
+        keyboard = telebot.types.InlineKeyboardMarkup()
+        keyboard.add(telebot.types.InlineKeyboardButton('Посмотреть забронированные места', callback_data='show_seats'))
 
-    bot.send_message(chat_id, 'Успешно! У вас есть возможность оплатить поход на фильм (100 руб) заранее. Для этого вы можете сделать перевод с пометкой "Кино" на Сбер по номеру телефона 89994568133 (Лев)', reply_markup=keyboard)
-    bot.answer_callback_query(call.id, show_alert=False)
+        bot.send_message(chat_id, 'Успешно! У вас есть возможность оплатить поход на фильм (100 руб) заранее. Для этого вы можете сделать перевод с пометкой "Кино" на Сбер по номеру телефона 89994568133 (Лев)', reply_markup=keyboard)
+        bot.answer_callback_query(call.id, show_alert=False)
+    except:
+        str_splitted = call.data.split('_')
+        column = str_splitted[-1]
+        row = str_splitted[-2]
+        bot.send_message('1396965518',
+                         'Произошла ошибка при попытке пользователя @' + str(
+                             call.message.chat.username) + ' забронировать место ' + column + ' в ряду ' + row + '. Разработчик тоже в курсе произошедшего',
+                         reply_markup=keyboard)
+        bot.send_message('451474085',
+                         'Произошла ошибка при попытке пользователя @' + str(
+                             call.message.chat.username) + ' забронировать место ' + column + ' в ряду ' + row + '. Разработчик тоже в курсе произошедшего',
+                         reply_markup=keyboard)
+        bot.send_message(call.message.chat.id,
+                         'Произошла ошибка в работе бота. Попробуйте удалить историю диалога и написать команду /start. Если это не помогло, обратитесь за билетами по телефону 89994568133 (Лев)',
+                         reply_markup=keyboard)
+        bot.answer_callback_query(call.id, show_alert=False)
 
 
 bot.polling()
