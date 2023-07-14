@@ -3,7 +3,7 @@ import csv
 import telebot
 import os
 
-bot = telebot.TeleBot('6359853556:AAFZpHezFfJgUBinXkL4eSj1D2scSNUK2tY')
+bot = telebot.TeleBot('5976173556:AAFq5WaLR9st7Ki76QwytLqAC2TMRnQ96JM')
 
 square_size = 80
 image = Image.new("RGB", (square_size * 12, square_size * 9), "gray")
@@ -80,28 +80,25 @@ def prepare_image(id = False):
     return res_image
 
 def remove_rows_with_id(id):
-    filename = 'database.csv'
-    temp_filename = 'temp_' + filename
-
-    if os.path.exists(temp_filename):
-        os.remove(temp_filename)
-
-    count = 0
-
-    with open(filename, 'r') as file, open(temp_filename, 'w', newline='') as temp_file:
+    with open('database.csv', 'r') as file:
         reader = csv.reader(file)
-        writer = csv.writer(temp_file)
+        data = list(reader)
 
-        for row in reader:
-            if (row[0] == 'id'):
-                writer.writerow(row)
-                print(row)
-            elif row[0] != id:
-                writer.writerow(row)
-                print(row)
-            count+=1
+        data = [row for row in data if row[0] != str(id)]
+        generate_initial_grid()
 
-    os.replace(temp_filename, filename)
+        print(data)
+
+        with open('database.csv', 'w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerows(data)
+
+def count_free_seats():
+    with open('database.csv', 'r') as file:
+        reader = csv.reader(file)
+        data = list(reader)
+
+        return 81-len(data)
 
 generate_initial_grid()
 
@@ -109,8 +106,23 @@ generate_initial_grid()
 def send_welcome(message):
     keyboard = telebot.types.InlineKeyboardMarkup()
     keyboard.add(telebot.types.InlineKeyboardButton('Показать места', callback_data='show_seats'))
-    bot.send_message(message.chat.id, 'Вы можете забронировать место на фильм ... в ...\nОсталось ... мест',
+    keyboard.add(telebot.types.InlineKeyboardButton('Информация о фильме', callback_data='movie_info'))
+
+    free_seats = count_free_seats()
+
+    bot.send_message(message.chat.id, 'Вы можете забронировать место на фильм на 16:00\nОсталось '+str(free_seats)+' мест',
                      reply_markup=keyboard)
+
+@bot.callback_query_handler(func=lambda call: call.data == "movie_info")
+def show_seats_handler(call):
+    chat_id = call.message.chat.id
+
+    keyboard = telebot.types.InlineKeyboardMarkup()
+    keyboard.add(telebot.types.InlineKeyboardButton('Посмотреть свободные места', callback_data='show_seats'))
+    keyboard.add(telebot.types.InlineKeyboardButton('Забронировать место', callback_data='start_booking'))
+
+    bot.send_message(chat_id, 'Где: Омск, 10 лет Октября, 195Б\nКогда: 22.07.2023, начало в 16:00\nСколько стоит: вход 100 рублей\nКак забронировать место: по телефону 89994568133 или в этом боте\nКак называется фильм: это пока что секрет :)', reply_markup=keyboard)
+    bot.answer_callback_query(call.id, show_alert=False)
 
 
 @bot.callback_query_handler(func=lambda call: call.data == "show_seats")
@@ -214,6 +226,9 @@ def book_row_handler(call):
     column = str_splitted[-1]
     row = str_splitted[-2]
 
+    bot.send_message('1396965518',
+                     'Пользователь '+str(call.message.chat.first_name)+ ' ' + str(call.message.chat.last_name) + ' под ником @'+str(call.message.chat.username)+' забронировал место '+column+' в ряду '+row+'.')
+
     with open('./database.csv', 'a', newline='') as file:
         writer = csv.writer(file)
         writer.writerow([chat_id, row, column])
@@ -221,7 +236,7 @@ def book_row_handler(call):
     keyboard = telebot.types.InlineKeyboardMarkup()
     keyboard.add(telebot.types.InlineKeyboardButton('Посмотреть забронированные места', callback_data='show_seats'))
 
-    bot.send_message(chat_id, 'Успешно!', reply_markup=keyboard)
+    bot.send_message(chat_id, 'Успешно! У вас есть возможность оплатить поход на фильм (100 руб) заранее. Для этого вы можете сделать перевод с пометкой "Кино" на Сбер по номеру телефона 89994568133 (Лев)', reply_markup=keyboard)
     bot.answer_callback_query(call.id, show_alert=False)
 
 
